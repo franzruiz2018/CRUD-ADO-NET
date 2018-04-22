@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Listado de Alumnos</h2>
+
+<p>Total de Alumnos:  @Enumerable.Count(ViewBag.ListaAlumnos)</p>
+@Html.ActionLink("Registrar Alumno", "RegistrarAlumno", null, new { @class = "btn btn-default" })
+
+
+    <p class="text-success">
+        @TempData["Mensaje"]
+    </p>
+
+
+<p></p>
+    <table class="table">
+
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Registro</th>
+            <th></th>
+
+
+            @foreach (var alumno in ViewBag.ListaAlumnos)
+            {
+            <tr>
+                <td>@alumno.IdAlumno</td>
+                <td>@alumno.NombreAlumno</td>
+                <td>@alumno.DniAlumno</td>
+                <td>@Convert.ToDateTime(alumno.Registro).ToString("dd/MM/yyyy hh:mm")</td>
+                <td>
+                    @Html.ActionLink("Actualizar", "EditarAlumno", new { id = alumno.IdAlumno }, new { @class = "btn btn-default" }) &nbsp;&nbsp;
+                @Html.ActionLink("Eliminar", "BorrarAlumno", new { id = alumno.IdAlumno }, new { @class = "btn btn-default", onclick="return confirm('Seguro que desea borrar');" })
+            </td>
+        </tr>
+            }
+        </table>
