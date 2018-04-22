@@ -805,7 +805,7 @@ select @salida
 
  Pasos
 
- 1.	CReamos las funciones que te permiten ocultar y mostrar columnas de una tabla
+ 1.	Creamos las funciones que te permiten ocultar y mostrar columnas de una tabla
 
 ```
 function hideTableColumns(idTable, columnsIndexs) {
@@ -830,7 +830,7 @@ function showTableColumns(idTable, columnsIndexs) {
 
 ```
 
-2. Creamos la funcion que nos permite imprimir el contenido, pero antes se oculta las collumnas que no se requieren. Se puede ocultar varias columnas a la ves hideTableColumns('table1', [0,2])
+2. Agregamos la la libreria jQuery.print.js y creamos la funcion que nos permite imprimir el contenido, pero antes se oculta las columnas que no se requieren. Se puede ocultar varias columnas a la ves hideTableColumns('table1', [0,2])
 
 ```
 function ImprimirPrintJQuery(ContenidoID) {
