@@ -1,6 +1,6 @@
 ﻿@model CRUDAlumno.Models.Alumno
 
-@using (Html.BeginForm())
+@using (Html.BeginForm(null, null, FormMethod.Post, new { name = "registro", id = "registro" }))
 {
     <div class="form-horizontal">
 

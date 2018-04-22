@@ -1,6 +1,6 @@
 ﻿@model CRUDAlumno.Models.Alumno
 
-@using (Html.BeginForm())
+@using (Html.BeginForm(null, null, FormMethod.Post, new { name = "editar", id = "editar" }))
 {
    
     

@@ -1,4 +1,6 @@
-**CRUD con MVC 5 y ADO.NET
+*CRUD con MVC 5 y ADO.NET*
+
+**Creacion del CRUD Alumno**
 
 Pasos:
 
@@ -493,6 +495,148 @@ public ActionResult BorrarAlumno(int id)
 </div>
 
 ```
+
+**Creacion de la Validación de los formularios con JQuery Validate**
+
+Actualizamos nuestro paquete de Jquery a traves de NuGet, para ello vamos a Inicio Rapido CTRL + Q y escribimos Nuget, el la parte inferior nos aparece la consola de Administrador de paquetes, ahi escribimos la siguiente linea install-package jquery.
+
+Para actualizar  Jquery Validate de igual manera utilizaremos el comando Install-Package jQuery.Validation -Version 1.17.0
+
+Referencias:
+https://www.nuget.org/packages/jQuery/
+https://www.nuget.org/packages/jquery.validation
+
+
+Pasos:
+
+1.Creamos un archivo sitio.js donde escribiremos los codigos de js que necesitaremos
+
+Importante!!! Asegurarnos que nuestros codigos de js esten debajo del Jquery y JqueryValidate. Puede aperecer este error "$ is not defined"
+
+```
+	<script src="~/Scripts/jquery-3.3.1.min.js"></script>  
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/sitio.js"></script>
+```
+
+2.Escrbimos el siguiente codigo en el archivo sitio.js:
+
+```
+$(function() {   
+    $("form[name='registro']").validate({       
+        rules: {           
+            NombreAlumno: "required",
+            DniAlumno: {
+                required: true,
+                number: true
+            }   
+        },       
+        messages: {
+            NombreAlumno: "Please ingrese su nombre",
+            DniAlumno: {
+                required: "Ingrese su dni",
+                number: "Solo debe contener números"
+            }
+          
+        },       
+        submitHandler: function (form) {
+            form.submit();
+        }
+    });
+});
+```
+
+Se muestra el codigo original para futuras modificaciones
+
+```
+// Wait for the DOM to be ready
+$(function() {
+  // Initialize form validation on the registration form.
+  // It has the name attribute "registration"
+  $("form[name='registration']").validate({
+    // Specify validation rules
+    rules: {
+      // The key name on the left side is the name attribute
+      // of an input field. Validation rules are defined
+      // on the right side
+      firstname: "required",
+      lastname: "required",
+      email: {
+        required: true,
+        // Specify that email should be validated
+        // by the built-in "email" rule
+        email: true
+      },
+      password: {
+        required: true,
+        minlength: 5
+      }
+    },
+    // Specify validation error messages
+    messages: {
+      firstname: "Please enter your firstname",
+      lastname: "Please enter your lastname",
+      password: {
+        required: "Please provide a password",
+        minlength: "Your password must be at least 5 characters long"
+      },
+      email: "Please enter a valid email address"
+    },
+    // Make sure the form is submitted to the destination defined
+    // in the "action" attribute of the form when valid
+    submitHandler: function(form) {
+      form.submit();
+    }
+  });
+});
+```
+
+El formulario que llama la funcion es  registro como se muestra en la siguiente  $("form[name='registro']"). para ello es necesario modificar en el archivo RegistrarAlumno.cshtml la linea Html.BeginForm agregandole el nombre y id del formulario.
+
+```
+@using (Html.BeginForm(null, null, FormMethod.Post, new { name = "registro", id = "registro" }))
+```
+
+Para el formulario de actualizacion se realiza lo mismo copiando los mismos codigos, cambiando solo el nombre de formulario y los mensajes.
+
+```
+@using (Html.BeginForm(null, null, FormMethod.Post, new { name = "editar", id = "editar" }))
+```
+
+```
+$(function () {
+    $("form[name='editar']").validate({
+        rules: {
+            NombreAlumno: "required",
+            DniAlumno: {
+                required: true,
+                number: true
+            }
+        },
+        messages: {
+            NombreAlumno: "Please ingrese su nombre para la actualizacion",
+            DniAlumno: {
+                required: "Ingrese su dni  para la actualizacion",
+                number: "Solo debe contener números  en la actualizacion"
+            }
+
+        },
+        submitHandler: function (form) {
+            form.submit();
+        }
+    });
+});
+```
+
+
+
+
+
+
+
+
+
 
 
 
