@@ -16,7 +16,7 @@ namespace CRUDAlumno
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Alumno", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "Alumno", action = "ListadoAlumnos", id = UrlParameter.Optional }
             );
         }
     }
