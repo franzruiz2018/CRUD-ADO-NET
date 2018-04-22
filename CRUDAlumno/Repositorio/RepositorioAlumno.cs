@@ -69,6 +69,42 @@ namespace CRUDAlumno.Repositorio
             }
             return alumnos;
         }
+        public List<Alumno> ListaAlumnosPaginacion(int pageIndex, int pageSize, out int pageCount)
+        {
+            List<Alumno> Alumnos = new List<Alumno>();
+            using (SqlConnection conexion = new SqlConnection("server=.;database=DemoAlumno;user=sa;password=123"))
+            {
+                conexion.Open();
+                using (SqlCommand comando = new SqlCommand("sp_listar_alumnos_paginado", conexion))
+                {
+                    comando.CommandType = CommandType.StoredProcedure;
+                    comando.CommandTimeout = 0;
+                    comando.Parameters.AddWithValue("@pageIndex", pageIndex);
+                    comando.Parameters.AddWithValue("@pageSize", pageSize);
+                    comando.Parameters.AddWithValue("@pageCount", 0).Direction = ParameterDirection.Output;
+                    using (SqlDataReader reader = comando.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            Alumno a = null;
+                            while (reader.Read())
+                            {
+                                a = new Alumno();
+                                a.IdAlumno = (int)reader["IdAlumno"];
+                                a.NombreAlumno = reader["NombreAlumno"].ToString();
+                                a.DniAlumno = (int)reader["DniAlumno"];
+                                a.Registro = (DateTime)reader["Registro"];
+
+                                Alumnos.Add(a);
+                            }
+                        }
+                    }
+
+                    pageCount = (int)comando.Parameters["@pageCount"].Value;
+                }
+            }
+            return Alumnos;
+        }
 
 
         public bool ActualizarAlumno(Alumno a)

@@ -19,6 +19,6 @@ D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\bin\es\System.Web.Webpages.Deployment.re
 D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\bin\es\System.Web.Webpages.Razor.resources.dll
 D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\bin\es\System.Web.Helpers.resources.dll
 D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\bin\es\System.Web.Mvc.resources.dll
-D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\obj\Debug\CRUDAlumno.csprojResolveAssemblyReference.cache
 D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\obj\Debug\CRUDAlumno.dll
 D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\obj\Debug\CRUDAlumno.pdb
+D:\Proyectos .Net\CRUDAlumno\CRUDAlumno\obj\Debug\CRUDAlumno.csprojResolveAssemblyReference.cache

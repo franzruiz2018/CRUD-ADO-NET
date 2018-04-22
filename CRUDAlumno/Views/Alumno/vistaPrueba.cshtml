@@ -1,0 +1,52 @@
+﻿@model IEnumerable<CRUDAlumno.Models.Alumno>
+
+@{
+    ViewBag.Title = "vistaPrueba";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>vistaPrueba</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.IdAlumno)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.NombreAlumno)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DniAlumno)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Registro)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.IdAlumno)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.NombreAlumno)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DniAlumno)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Registro)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>
+    </tr>
+}
+
+</table>

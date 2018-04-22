@@ -1,0 +1,28 @@
+﻿@model IEnumerable<CRUDAlumno.Models.Alumno>
+@{
+    ViewBag.Title = "ListadoAlumnos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Listado Alumnos</h2>
+
+
+@Html.ActionLink("Registrar Alumno", "RegistrarAlumno", null, new { @class = "btn btn-default" })
+
+
+<p class="text-success">
+    @TempData["Mensaje"]
+</p>
+
+
+<p></p>
+
+<div id="DivListAlumnos">
+    @Html.Partial("ListaAlumnoParcial",Model)
+</div>
+
+
+<input type="button" class="btn btn-default" onclick="ImprimirPrintJQuery('ImprimirLista')" value="Imprimir PrintJQuery" />
+
+
+

@@ -1,10 +1,10 @@
-#CRUD con MVC 5 y ADO.NET
+# CRUD con MVC 5 y ADO.NET
 
-##Creacion del CRUD Alumno
+## Creacion del CRUD Alumno
 
 Pasos:
 
-1.Creación de la tabla Alumno y los procedimientos almacenados
+1. Creación de la tabla Alumno y los procedimientos almacenados
 
 ```
 CREATE TABLE [dbo].[Alumno1](
@@ -101,7 +101,7 @@ INSERT [dbo].[Alumno] ([IdAlumno], [NombreAlumno], [DniAlumno], [Registro]) VALU
 GO
 ```
 
-2.Creación del proyecto en visual studio, se configura la cadena de conexión en el Web.config (Lluego de la etiqueta Configuracion) y de la clase Alumno en el Modelo
+2. Creación del proyecto en visual studio, se configura la cadena de conexión en el Web.config (Lluego de la etiqueta Configuracion) y de la clase Alumno en el Modelo
 
 ```
  <connectionStrings>
@@ -125,7 +125,7 @@ GO
     }
 ```
 
-3.Creación de una Carpeta Repositorio donde crearemos una calse RepositorioAlumnos.cs el cual nos servira para conectarnos con la base de datos.
+3. Creación de una Carpeta Repositorio donde crearemos una calse RepositorioAlumnos.cs el cual nos servira para conectarnos con la base de datos.
 
 ```
 namespace CRUDAlumno.Repositorio
@@ -496,7 +496,7 @@ public ActionResult BorrarAlumno(int id)
 
 ```
 
-##Creacion de la Validación de los formularios con JQuery Validate
+## Creacion de la Validación de los formularios con JQuery Validate
 
 Actualizamos nuestro paquete de Jquery a traves de NuGet, para ello vamos a Inicio Rapido CTRL + Q y escribimos Nuget, el la parte inferior nos aparece la consola de Administrador de paquetes, ahi escribimos la siguiente linea install-package jquery.
 
@@ -509,7 +509,7 @@ https://www.nuget.org/packages/jquery.validation
 
 Pasos:
 
-1.Creamos un archivo sitio.js donde escribiremos los codigos de js que necesitaremos
+1. Creamos un archivo sitio.js donde escribiremos los codigos de js que necesitaremos
 
 >Importante!!! Asegurarnos que nuestros codigos de js esten debajo del Jquery y JqueryValidate. Puede aperecer este error "$ is not defined"
 
@@ -520,7 +520,7 @@ Pasos:
     <script src="~/Scripts/sitio.js"></script>
 ```
 
-2.Escrbimos el siguiente codigo en el archivo sitio.js:
+2. Escrbimos el siguiente codigo en el archivo sitio.js:
 
 ```
 $(function() {   
@@ -629,15 +629,222 @@ $(function () {
 });
 ```
 
+## Creación de una paginacion con Ajax
+
+Pasos
+
+1. Creación del procedimiento: sp_listar_alumnos_paginado
+
+```
+create procedure sp_listar_alumnos_paginado
+@PageIndex int=1,
+@PageSize int=10,
+@PageCount int=0 output
+as
+SET @PageCount = (SELECT COUNT(1) FROM Alumno)
+SET @PageCount = CASE WHEN (@PageCount%@PageSize=0) THEN @PageCount/@PageSize ELSE @PageCount/@PageSize +1 END 
+SELECT * FROM(SELECT ROW_NUMBER() OVER(ORDER BY IdAlumno)RowID, * FROM Alumno) Alumno WHERE RowID BETWEEN (@PageSize * (@PageIndex-1) + 1) AND (@PageIndex * @PageSize)
+
+```
+ Comprobando
+
+ ```
+ declare @salida int
+exec sp_listar_alumnos_paginado 1,10,@salida output
+select @salida
+
+ ```
 
 
+2. Instalación de la libreria Unobtrusive de ajax a trabes de NuGet de visual studio Install-Package Microsoft.jQuery.Unobtrusive.Ajax -Version 3.2.5 
+
+3. En el repositorio crear la clase ListaAlumnosPaginacion el cual nos devuelve la lista de alumnos paginados
+
+ ```
+ public List<Alumno> ListaAlumnosPaginacion(int pageIndex, int pageSize, out int pageCount)
+        {
+            List<Alumno> Alumnos = new List<Alumno>();
+            using (SqlConnection conexion = new SqlConnection("server=.;database=DemoAlumno;user=sa;password=123"))
+            {
+                conexion.Open();
+                using (SqlCommand comando = new SqlCommand("sp_listar_alumnos_paginado", conexion))
+                {
+                    comando.CommandType = CommandType.StoredProcedure;
+                    comando.CommandTimeout = 0;
+                    comando.Parameters.AddWithValue("@pageIndex", pageIndex);
+                    comando.Parameters.AddWithValue("@pageSize", pageSize);
+                    comando.Parameters.AddWithValue("@pageCount", 0).Direction = ParameterDirection.Output;
+                    using (SqlDataReader reader = comando.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            Alumno a = null;
+                            while (reader.Read())
+                            {
+                                a = new Alumno();
+                                a.IdAlumno = (int)reader["IdAlumno"];
+                                a.NombreAlumno = reader["NombreAlumno"].ToString();
+                                a.DniAlumno = (int)reader["DniAlumno"];
+                                a.Registro = (DateTime)reader["Registro"];
+
+                                Alumnos.Add(a);
+                            }
+                        }
+                    }
+
+                    pageCount = (int)comando.Parameters["@pageCount"].Value;
+                }
+            }
+            return Alumnos;
+        }
+
+  ```
+
+4. En el controlador se crea 3 clases
+  ```
+    public ActionResult ListadoAlumnos(int id=1)
+        {
+           return View(buscar(id));
+        }
+
+        public ActionResult ListaAlumnoParcial(int id=1)
+        {
+            return PartialView(buscar(id));
+        }
+
+        public List<Alumno> buscar(int pageIndex)
+        {
+            RepositorioAlumno repositorio = new RepositorioAlumno();
+            int pageCount = 0;
+            List<Alumno> ListaAlumnos = repositorio.ListaAlumnosPaginacion(pageIndex, 10, out pageCount);
+            ViewBag.PageCount = pageCount;
+            ViewBag.PageIndex = pageIndex;
+            return ListaAlumnos;
+        }
+  ```
+
+5. Se crea la vista ListadoAlumnos
+
+    ```
+@model IEnumerable<CRUDAlumno.Models.Alumno>
+@{
+    ViewBag.Title = "ListadoAlumnos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Listado Alumnos</h2>
 
 
+@Html.ActionLink("Registrar Alumno", "RegistrarAlumno", null, new { @class = "btn btn-default" })
 
 
+<p class="text-success">
+    @TempData["Mensaje"]
+</p>
 
 
+<p></p>
+
+<div id="DivListAlumnos">
+    @Html.Partial("ListaAlumnoParcial",Model)
+</div>
+  ```
+
+6. Se crea la vista parcial ListaAlumnoParcial
+  ```
+	@model IEnumerable<CRUDAlumno.Models.Alumno>
+
+<table class="table">
+
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>DNI</th>
+        <th>Registro</th>
+        <th></th>
 
 
+        @foreach (var alumno in Model)
+        {
+        <tr>
+            <td>@alumno.IdAlumno</td>
+            <td>@alumno.NombreAlumno</td>
+            <td>@alumno.DniAlumno</td>
+            <td>@Convert.ToDateTime(alumno.Registro).ToString("dd/MM/yyyy hh:mm")</td>
+            <td>
+                @Html.ActionLink("Actualizar", "EditarAlumno", new { id = alumno.IdAlumno }, new { @class = "btn btn-default" }) &nbsp;&nbsp;
+                @Html.ActionLink("Eliminar", "BorrarAlumno", new { id = alumno.IdAlumno }, new { @class = "btn btn-default", onclick = "return confirm('Seguro que desea borrar');" })
+            </td>
+        </tr>
+        }
+    </table>
 
+    <ul class="pagination">
+        <li>@Ajax.ActionLink("Primero", "ListaAlumnoParcial", new { id = 1 }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        <li>@Ajax.ActionLink("Anterior", "ListaAlumnoParcial", new { id = (ViewBag.PageIndex - 1 < 1) ? 1 : (ViewBag.PageIndex - 1) }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        <li><span>Pág. @ViewBag.PageIndex de @ViewBag.PageCount</span></li>
+        <li>@Ajax.ActionLink("Siguiente", "ListaAlumnoParcial", new { id = (ViewBag.PageIndex + 1 > ViewBag.PageCount) ? ViewBag.PageCount : (ViewBag.PageIndex + 1) }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        <li>@Ajax.ActionLink("Ultimo", "ListaAlumnoParcial", new { id = ViewBag.PageCount }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+    </ul>
+
+	  ```
+
+
+7. Para la paginación es el siguiente codigo:
+ ```
+   <ul class="pagination">
+        <li>@Ajax.ActionLink("Primero", "ListaAlumnoParcial", new { id = 1 }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        <li>@Ajax.ActionLink("Anterior", "ListaAlumnoParcial", new { id = (ViewBag.PageIndex - 1 < 1) ? 1 : (ViewBag.PageIndex - 1) }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        <li><span>Pág. @ViewBag.PageIndex de @ViewBag.PageCount</span></li>
+        <li>@Ajax.ActionLink("Siguiente", "ListaAlumnoParcial", new { id = (ViewBag.PageIndex + 1 > ViewBag.PageCount) ? ViewBag.PageCount : (ViewBag.PageIndex + 1) }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        <li>@Ajax.ActionLink("Ultimo", "ListaAlumnoParcial", new { id = ViewBag.PageCount }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+    </ul>
+ ```
+
+ ## Creacion de un boton para imprimir los resultados
+
+ Pasos
+
+ 1.	CReamos las funciones que te permiten ocultar y mostrar columnas de una tabla
+
+```
+function hideTableColumns(idTable, columnsIndexs) {
+    $("#" + idTable + " tr").each(function () {
+        for (var i = 0; i < columnsIndexs.length; i++) {
+            var colIndex = columnsIndexs[i];
+            $($(this).find("th")[colIndex]).hide();
+            $($(this).find("td")[colIndex]).hide();
+        }
+    });
+}
+
+function showTableColumns(idTable, columnsIndexs) {
+    $("#" + idTable + " tr").each(function () {
+        for (var i = 0; i < columnsIndexs.length; i++) {
+            var colIndex = columnsIndexs[i];
+            $($(this).find("th")[colIndex]).show();
+            $($(this).find("td")[colIndex]).show();
+        }
+    });
+}
+
+```
+
+2. Creamos la funcion que nos permite imprimir el contenido, pero antes se oculta las collumnas que no se requieren. Se puede ocultar varias columnas a la ves hideTableColumns('table1', [0,2])
+
+```
+function ImprimirPrintJQuery(ContenidoID) {
+    hideTableColumns('alumnosTabla', [4])
+    $('#' + ContenidoID).print();
+    showTableColumns('alumnosTabla', [4])
+}
+
+```
+
+3. Se crea el boton que hace llamado a la función
+
+```
+<input type="button" class="btn btn-default" onclick="ImprimirPrintJQuery('ImprimirLista')" value="Imprimir PrintJQuery" />
+
+```
 

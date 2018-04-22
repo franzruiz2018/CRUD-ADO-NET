@@ -19,6 +19,31 @@ namespace CRUDAlumno.Controllers
             return View();
         }
 
+        public ActionResult ListadoAlumnos(int id=1)
+        {
+           return View(buscar(id));
+        }
+
+        public ActionResult ListaAlumnoParcial(int id=1)
+        {
+            return PartialView(buscar(id));
+        }
+
+        public List<Alumno> buscar(int pageIndex)
+        {
+            RepositorioAlumno repositorio = new RepositorioAlumno();
+            int pageCount = 0;
+            List<Alumno> ListaAlumnos = repositorio.ListaAlumnosPaginacion(pageIndex, 10, out pageCount);
+            ViewBag.PageCount = pageCount;
+            ViewBag.PageIndex = pageIndex;
+            return ListaAlumnos;
+
+
+        }
+
+
+
+
         [HttpGet]
         public ActionResult RegistrarAlumno()
         {

@@ -1,0 +1,37 @@
+﻿@model IEnumerable<CRUDAlumno.Models.Alumno>
+
+<div id="ImprimirLista">
+
+    <table class="table" id="alumnosTabla">
+
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Registro</th>
+            <th id="enlaces"></th>
+
+
+            @foreach (var alumno in Model)
+            {
+            <tr>
+                <td>@alumno.IdAlumno</td>
+                <td>@alumno.NombreAlumno</td>
+                <td>@alumno.DniAlumno</td>
+                <td>@Convert.ToDateTime(alumno.Registro).ToString("dd/MM/yyyy hh:mm")</td>
+                <td id="enlaces">
+                    @Html.ActionLink("Actualizar", "EditarAlumno", new { id = alumno.IdAlumno }, new { @class = "btn btn-default" }) &nbsp;&nbsp;
+                    @Html.ActionLink("Eliminar", "BorrarAlumno", new { id = alumno.IdAlumno }, new { @class = "btn btn-default", onclick = "return confirm('Seguro que desea borrar');" })
+                </td>
+            </tr>
+            }
+        </table>
+    </div>
+
+        <ul class="pagination">
+            <li>@Ajax.ActionLink("Primero", "ListaAlumnoParcial", new { id = 1 }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+            <li>@Ajax.ActionLink("Anterior", "ListaAlumnoParcial", new { id = (ViewBag.PageIndex - 1 < 1) ? 1 : (ViewBag.PageIndex - 1) }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+            <li><span>Pág. @ViewBag.PageIndex de @ViewBag.PageCount</span></li>
+            <li>@Ajax.ActionLink("Siguiente", "ListaAlumnoParcial", new { id = (ViewBag.PageIndex + 1 > ViewBag.PageCount) ? ViewBag.PageCount : (ViewBag.PageIndex + 1) }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+            <li>@Ajax.ActionLink("Ultimo", "ListaAlumnoParcial", new { id = ViewBag.PageCount }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
+        </ul>
