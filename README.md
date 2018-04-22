@@ -1,6 +1,6 @@
-*CRUD con MVC 5 y ADO.NET*
+#CRUD con MVC 5 y ADO.NET
 
-**Creacion del CRUD Alumno**
+##Creacion del CRUD Alumno
 
 Pasos:
 
@@ -496,7 +496,7 @@ public ActionResult BorrarAlumno(int id)
 
 ```
 
-**Creacion de la Validación de los formularios con JQuery Validate**
+##Creacion de la Validación de los formularios con JQuery Validate
 
 Actualizamos nuestro paquete de Jquery a traves de NuGet, para ello vamos a Inicio Rapido CTRL + Q y escribimos Nuget, el la parte inferior nos aparece la consola de Administrador de paquetes, ahi escribimos la siguiente linea install-package jquery.
 
@@ -511,7 +511,7 @@ Pasos:
 
 1.Creamos un archivo sitio.js donde escribiremos los codigos de js que necesitaremos
 
-Importante!!! Asegurarnos que nuestros codigos de js esten debajo del Jquery y JqueryValidate. Puede aperecer este error "$ is not defined"
+>Importante!!! Asegurarnos que nuestros codigos de js esten debajo del Jquery y JqueryValidate. Puede aperecer este error "$ is not defined"
 
 ```
 	<script src="~/Scripts/jquery-3.3.1.min.js"></script>  
