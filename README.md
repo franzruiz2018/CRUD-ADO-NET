@@ -751,6 +751,7 @@ select @salida
   ```
 
 6. Se crea la vista parcial ListaAlumnoParcial
+
   ```
 	@model IEnumerable<CRUDAlumno.Models.Alumno>
 
@@ -787,10 +788,11 @@ select @salida
         <li>@Ajax.ActionLink("Ultimo", "ListaAlumnoParcial", new { id = ViewBag.PageCount }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
     </ul>
 
-	  ```
+```
 
 
 7. Para la paginación es el siguiente codigo:
+
  ```
    <ul class="pagination">
         <li>@Ajax.ActionLink("Primero", "ListaAlumnoParcial", new { id = 1 }, new AjaxOptions { UpdateTargetId = "DivListAlumnos", InsertionMode = InsertionMode.Replace })</li>
