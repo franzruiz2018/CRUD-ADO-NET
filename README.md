@@ -803,6 +803,8 @@ select @salida
 
  ## Creacion de un boton para imprimir los resultados
 
+ Los trigger son disparadores que desencadenan acciones en la tabla asociada despues de un insert, update o delete. Ayudan a las tareas de administracion y mantenimiento de base de datos 
+
  Pasos
 
  1.	Creamos las funciones que te permiten ocultar y mostrar columnas de una tabla
@@ -848,3 +850,241 @@ function ImprimirPrintJQuery(ContenidoID) {
 
 ```
 
+## Creando Triger para auditoria de la base de datos
+
+1. Se crea una tabla auditoria
+
+```
+CREATE TABLE [dbo].[RegistroLog](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[idAlumnoLog] [int] NULL,
+	[fecha] [datetime] NULL,
+	[tabla] [varchar](50) NULL,
+	[accion] [varchar](50) NULL,
+ CONSTRAINT [PK_RegistroLog] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+```
+
+2. Se crea el Trigger para la accion de insertar, Verificando que el dni no tenga 00000000, de se asi cancela la transacción.
+
+```
+alter trigger tr_alumno_insert
+on alumno
+for insert
+as
+begin
+set nocount on; --evita que se muestren el detalle de los cambios realizado
+if(select [DniAlumno] from inserted)=00000000
+	begin	
+	rollback transaction
+	end
+else
+	begin
+	insert into RegistroLog(idAlumnoLog,fecha,[tabla] ,[accion] ) select IdAlumno,getdate(),'Alumno','Insertar'
+	from inserted
+	end
+end
+
+```
+
+3. Se crea un trigger para la accion de delete
+
+```
+alter trigger tr_alumno_delete
+on alumno
+for delete
+as
+begin
+set nocount on; --evita que se muestren el detalle de los cambios realizado
+insert into RegistroLog(idAlumnoLog,fecha,[tabla] ,[accion]) select IdAlumno,getdate(),'Alumno','Eliminar'
+from deleted
+end
+```
+
+## Cursor 
+
+Los cursores son una herramienta de SQL que nos permite recorrer el resultado de una consulta SQL y realizar operaciones en cada paso de esta. Es así como nos ayuda a realizar operaciones que de otro modo serían más complejas o imposibles.
+
+Un ejemplo de un cursor el cual en cada seleccion nos muestra un registro
+
+```
+--Declaramos la variable de tipo cursor
+--donde almacenamos los registros de la consulta
+--Alumno
+DECLARE micursor CURSOR
+     FOR select * from Alumno
+--aperturamos el cursor
+OPEN micursor
+--accedemos al primer registro del cursos con el operador
+--next
+FETCH NEXT FROM micursor
+--Cerramos el cursor
+close micursor
+--liberamos el cursor con el operador deallocate
+deallocate micursor
+```
+
+Se crea un cursor que nos permita devolver un reporte de alumnos
+
+```
+create procedure sp_reporte_listado_Alumnos
+as
+--Cursos -  Reporte  de Alumnos
+
+--Declaramos las variables locales que representaran
+--el valor de las columnas
+DECLARE @id char(8), @idAlumno char(8),@NombreAlumno char(30),
+@DniAlumno char(10),@Registro char(10), @TotalAlumnos char(8)
+--declaramos el cursor con la consulta de la tabla Alumno
+Set @TotalAlumnos = (select count(1) from Alumno)
+
+Declare micursor cursor for
+select top 20  ROW_NUMBER() over(order by IdAlumno) Id,  right('00000'+ltrim(rtrim(IdAlumno)),5) IdAlumno,NombreAlumno,right('00000000'+ ltrim(rtrim(DniAlumno)),8) DniAlumno,convert(varchar(10),registro,103) Registro from Alumno
+
+--aperturamos el cursos
+OPEN micursor
+
+----FETCH next from micursor --Recorremos cada fila del Cursor
+
+--obtenemos el primer registro y enviamos el valor
+--a las variables correspondientes
+FETCH micursor INTO @id, @idAlumno,@NombreAlumno,@DniAlumno,@Registro
+
+--Imprimimos la cabecera del reporte
+PRINT 'Listado de Alumnos'
+PRINT ''
+PRINT 'Total de Alumnos:' + CAST(@TotalAlumnos AS VARCHAR)  
+PRINT ''
+PRINT 'NUM       CODIGO    ALUMNO                             DNI         REGISTRO'
+PRINT '------------------------------------------------------------------------------'
+--Implementamos una estructura iterativa para poder
+--imprimir todos los registros
+WHILE @@FETCH_STATUS=0
+BEGIN
+     PRINT @id+space(2)+ @idAlumno+space(2)+@NombreAlumno+space(5)+@DniAlumno+space(2)+@Registro
+     FETCH micursor INTO @id, @idAlumno,@NombreAlumno,@DniAlumno,@Registro
+END
+
+ close micursor
+
+ deallocate	micursor
+```
+
+Resultado 
+
+```
+Listado de Alumnos
+ 
+Total de Alumnos:2674    
+ 
+NUM       CODIGO    ALUMNO                             DNI         REGISTRO
+------------------------------------------------------------------------------
+1         00001     MARIA INES ABADIE FOSSATTI         00995234    21/04/2018
+2         00002     RAQUEL ELIZABET ABAL NICOLARI      01249609    21/04/2018
+3         00003     MARÍA ROSARIO ABALDE MARTINEZ      01385554    21/04/2018
+4         00004     ALBERTO OSCAR ABALOS ROCHON        02543328    21/04/2018
+5         00005     ARIEL ABARNO SILVA                 03326849    21/04/2018
+6         00006     WINSTON FRANKLIN ABASCAL BELOQ     03588497    21/04/2018
+7         00007     PABLO DANIEL ABDALA SCHWARZ        01987304    21/04/2018
+8         00008     MERCEDES MARIA ABDALA SOSA         01455322    21/04/2018
+9         00009     JORGE MARIA ABIN DE MARIA          01247369    21/04/2018
+10        00010     ALCIDES ABREU HERNANDEZ            03593956    21/04/2018
+11        00011     MIRTA GRACIELA ABREU NUÑEZ         03449648    21/04/2018
+12        00012     SERGIO ABREU BONILLA               01033368    21/04/2018
+13        00013     DORITA ABUCHALJA SEADE             01178833    21/04/2018
+14        00014     HUGO JOSE ACHUGAR FERRARI          00655000    21/04/2018
+15        00015     JOSE BARTOLOME ACOSTA MADERA       03877670    21/04/2018
+16        00016     NELSON EDUARDO ACOSTA MARTINEZ     01679960    21/04/2018
+17        00017     JUAN CARLOS ACOSTA PEREZ           03205255    21/04/2018
+18        00018     MARTHA VANDA ACOSTA PEREIRA        01793175    21/04/2018
+19        00019     MABEL ACOSTA SOSA                  01250238    21/04/2018
+20        00020     EFRAIN ANDRES ACUÑA CABRERA        03694615    21/04/2018
+
+```
+
+Crear un cursor para guardar ciertos campos en una tabla temporal
+
+> Existen tablas temporales locales y globales que pueden ser creadas a partir de CREATE TABLE #nombreTabla y CREATE TABLE ##nombreTabla y pueden ser eliminadas con DROP TABLE y solo están vigentes durante la conexión o conexiones que fueron abiertas.
+
+```
+create procedure sp_listado_Alumnos_tabla_temporal
+as
+--Cursos -  Reporte  de Alumnos
+
+--Declaramos las variables locales que representaran
+--el valor de las columnas
+DECLARE @id char(8), @idAlumno char(8),@NombreAlumno char(30),
+@DniAlumno char(10),@Registro char(10), @TotalAlumnos char(8)
+--declaramos el cursor con la consulta de la tabla Alumno
+--Creamos una tabla temporal
+CREATE TABLE #tablaTemporal( IdAlumno varchar(8) , DniAlumno varchar(8) )
+
+Declare micursor cursor for
+select top 20  ROW_NUMBER() over(order by IdAlumno) Id,  right('00000'+ltrim(rtrim(IdAlumno)),5) IdAlumno,NombreAlumno,right('00000000'+ ltrim(rtrim(DniAlumno)),8) DniAlumno,convert(varchar(10),registro,103) Registro from Alumno
+
+--aperturamos el cursos
+OPEN micursor
+
+----FETCH next from micursor --Recorremos cada fila del Cursor
+
+--obtenemos el primer registro y enviamos el valor
+--a las variables correspondientes
+FETCH micursor INTO @id, @idAlumno,@NombreAlumno,@DniAlumno,@Registro
+
+WHILE @@FETCH_STATUS=0
+BEGIN
+	insert into #tablaTemporal ( IdAlumno , DniAlumno ) values (@idAlumno,@DniAlumno)
+    FETCH micursor INTO @id, @idAlumno,@NombreAlumno,@DniAlumno,@Registro
+END
+
+ close micursor
+ deallocate	micursor
+
+ select * from #tablaTemporal
+ drop table #tablaTemporal
+ ```
+
+## Funciones
+Rutina almacenada que recibe unos parámetros escalares de entrada, luego los procesa según el cuerpo definido de la función y por último retorna un resultado de un tipo especifico que permitirá cumplir un objetivo.
+SQL Server proporciona numerosas funciones integradas y permite crear funciones definidas por el usuario.
+
+**Tipos de Funciones**
+
+Funciones del Sistema:
+
+SQL Server cuenta con una gran variedad de funciones dependiendo de los valores o configuraciones que deseamos realizar, a continuación mostramos algunas funciones del sistema:
+
+Funciones de Agregado: SUM, AVG, COUNT,MAX, MIN
+Funciones de Fecha y Hora: GETDATE, DAY, MONTH, YEAR, DATEADD, DATEDIF, ISDATE
+Funciones Matemáticas: ABS, RAND, LOG10, SQRT, POWER, TAN, PI, RADIANS
+
+Funciones definidas por el usuario:
+
+Las funciones definidas por el usuario de SQL Server son rutinas que aceptan parámetros, realizan una acción, como un cálculo complejo, y devuelven el resultado de esa acción como un valor (único o conjunto de valores).
+
+ ```
+--Evaluamos primero si ya existe la función
+--que queremos implementar, si ya existe la eliminamos
+IF object_id('fn_lista_por_ultimo_digitos_dni') is not null
+BEGIN
+     DROP FUNCTION dbo.fn_lista_por_ultimo_digitos_dni
+END
+go
+--Implementamos la función con un solo parámetro de entrada
+CREATE FUNCTION fn_lista_por_ultimo_digitos_dni (@dni as int)
+RETURNS TABLE
+AS
+     RETURN (SELECT *
+     from alumno 
+     where DniAlumno like '%'+convert(varchar(8), @dni)+'')
+GO
+--Ejecutamos la función con un select,
+--Mostraremos los alumnos que coninciden con los ultimos digitos 
+select * from dbo.fn_lista_por_ultimo_digitos_dni(2)
+go
+ ```
